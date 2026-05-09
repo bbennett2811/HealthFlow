@@ -119,6 +119,10 @@ export default function Dashboard() {
         localStorage.setItem('allLogs', JSON.stringify(newAllLogs));
     };
 
+    const handleAddFoodToTotal = (kcal: number) => {
+        updateMetric('calories', (dailyData.calories || 0) + kcal);
+    };
+
     const calculateStreaks = (dataKey: string, goal: number, isLowerBetter: boolean = false) => {
         let currentStreak = 0;
         let bestStreak = 0;
