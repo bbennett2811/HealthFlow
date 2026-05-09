@@ -91,26 +91,32 @@ export async function GET(request: Request) {
             const fsRes = await fetch(`https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
-            if (fsRes.ok) {
-                const data = await fsRes.json();
-                data.foods?.food?.forEach((f: any) => {
-                    const desc = f.food_description || "";
-                    const kcal = desc.match(/Calories: (\d+)kcal/)?.[1] || 0;
-                    const protein = desc.match(/Protein: ([\d.]+)g/)?.[1] || 0;
-                    const carbs = desc.match(/Carbs: ([\d.]+)g/)?.[1] || 0;
-                    const fat = desc.match(/Fat: ([\d.]+)g/)?.[1] || 0;
-                    results.push({
-                        name: f.food_name,
-                        brand: f.brand_name || "Nix",
-                        kcal: parseInt(kcal),
-                        protein: parseFloat(protein),
-                        carbs: parseFloat(carbs),
-                        fat: parseFloat(fat),
-                        id: `fs-${f.food_id}`,
-                        source: 'FS'
-                    });
-                });
-            }
+                if (fsRes.ok) {
+                    const data = await fsRes.json();
+                    const foods = data.foods?.food;
+                    if (foods) {
+                        const foodArray = Array.isArray(foods) ? foods : [foods];
+                        foodArray.forEach((f: any) => {
+                            const desc = f.food_description || "";
+                            // Improved Regex: Case-insensitive and handles decimals/spaces
+                            const kcal = desc.match(/Calories:\s*(\d+)/i)?.[1] || 0;
+                            const protein = desc.match(/Protein:\s*([\d.]+)/i)?.[1] || 0;
+                            const carbs = desc.match(/Carbs:\s*([\d.]+)/i)?.[1] || 0;
+                            const fat = desc.match(/Fat:\s*([\d.]+)/i)?.[1] || 0;
+                            
+                            results.push({
+                                name: f.food_name,
+                                brand: f.brand_name || "Generic",
+                                kcal: parseInt(kcal as string),
+                                protein: parseFloat(protein as string),
+                                carbs: parseFloat(carbs as string),
+                                fat: parseFloat(fat as string),
+                                id: `fs-${f.food_id}`,
+                                source: 'FS'
+                            });
+                        });
+                    }
+                }
         }
     } catch (e) { console.error('FatSecret Search Failed'); }
   }

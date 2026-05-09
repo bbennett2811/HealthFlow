@@ -381,10 +381,14 @@ export default function Dashboard() {
                                     <div className="grid-2"><div className="form-group"><label>Qty</label><input type="number" value={foodQty} onChange={e => {setFoodQty(e.target.value); calculateStats(selectedFood, e.target.value, foodUnit);}} /></div><div className="form-group"><label>Unit</label><select value={foodUnit} onChange={e => {setFoodUnit(e.target.value); calculateStats(selectedFood, foodQty, e.target.value);}}><option value="g">g</option><option value="ml">ml</option><option value="l">L</option><option value="oz">oz</option><option value="lb">lb</option></select></div></div>
                                     
                                     {suggestions.length > 0 && (
-                                        <div style={{background:'rgba(0,0,0,0.03)', borderRadius:'16px', padding:'0.5rem', marginBottom:'1.5rem', maxHeight:'200px', overflowY:'auto'}}>
+                                        <div style={{background:'rgba(0,0,0,0.03)', borderRadius:'16px', padding:'0.5rem', marginBottom:'1.5rem', maxHeight:'200px', overflowY:'auto', border:'1px solid rgba(0,0,0,0.05)'}}>
                                             {suggestions.map((s, i) => (
-                                                <div key={i} onClick={() => { setSelectedFood(s); calculateStats(s, foodQty, foodUnit); setSuggestions([]); }} style={{padding:'0.8rem', cursor:'pointer', borderBottom:'1px solid rgba(0,0,0,0.05)', fontSize:'0.9rem', background: selectedFood?.id === s.id ? 'var(--accent-glow)' : 'transparent'}}>
-                                                    <strong>{s.name}</strong> <span style={{fontSize:'0.7rem', color:'var(--text-muted)'}}>({s.brand})</span> • {s.kcal} kcal
+                                                <div key={i} onClick={() => { setSelectedFood(s); calculateStats(s, foodQty, foodUnit); setSuggestions([]); }} style={{padding:'0.8rem', cursor:'pointer', borderBottom:'1px solid rgba(0,0,0,0.05)', fontSize:'0.9rem', background: selectedFood?.id === s.id ? 'var(--accent-glow)' : 'transparent', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                                    <div>
+                                                        <strong>{s.name}</strong> <br/>
+                                                        <span style={{fontSize:'0.7rem', color:'var(--text-muted)'}}>{s.brand} • {s.kcal} kcal</span>
+                                                    </div>
+                                                    <span style={{fontSize:'0.6rem', fontWeight:800, padding:'2px 6px', borderRadius:'6px', background:'rgba(0,0,0,0.05)', color:'var(--text-muted)'}}>{s.source}</span>
                                                 </div>
                                             ))}
                                         </div>
