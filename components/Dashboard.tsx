@@ -373,7 +373,7 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
 
             <div className="dashboard-container">
                 <div className="tabs">
-                    {['journal', 'daily-progress', 'insights', 'ai-recipes', 'goals'].map(tab => (
+                    {['journal', 'daily-progress', 'achievements', 'insights', 'ai-recipes', 'goals'].map(tab => (
                         <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
                             {tab.charAt(0).toUpperCase() + tab.slice(1).replace('-', ' ')}
                         </button>
@@ -383,6 +383,12 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                 <div className="content-area">
                     {activeTab === 'journal' && (
                         <div key="journal-tab" className="tab-content">
+                            <div style={{background:'var(--accent-glow)', padding:'1.5rem', borderRadius:'22px', border:'1px solid var(--accent-color)', marginBottom:'2rem', animation:'fadeIn 0.8s ease-out'}}>
+                                <span style={{fontSize:'0.7rem', fontWeight:800, color:'var(--accent-color)', textTransform:'uppercase', letterSpacing:'0.1em', display:'block', marginBottom:'0.5rem'}}>Daily Inspiration</span>
+                                <p style={{fontSize:'1.1rem', fontWeight:600, color:'var(--text-main)', fontStyle:'italic', margin:0}}>
+                                    "The only bad workout is the one that didn't happen. Every small step counts toward your big vision."
+                                </p>
+                            </div>
                             <div style={{display:'flex', alignItems:'center', gap:'1rem', marginBottom:'2rem'}}>
                                 <h2 style={{fontSize:'2.5rem', fontWeight:800, color:'var(--text-main)'}}>{displayDateName}</h2>
                                 {!isToday && <span style={{background:'rgba(99, 102, 241, 0.1)', color:'var(--accent-color)', padding:'6px 12px', borderRadius:'20px', fontSize:'0.7rem', fontWeight:700, border:'1px solid var(--accent-color)'}}>Viewing Past Entry</span>}
@@ -525,6 +531,36 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                         <div key="progress-tab" className="tab-content">
                             {allGoalsHit && <div style={{background:'var(--accent-color)', color:'white', padding:'1rem', borderRadius:'16px', textAlign:'center', marginBottom:'2rem', fontWeight:700}}>✨ Goal reached for {displayDateName}! 🚀</div>}
                             <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))'}}>{metrics.map(m => <ProgressCard key={m.label} {...m} selectedDate={selectedDate} allLogs={allLogs} units={units} />)}</div>
+                        </div>
+                    )}
+
+                    {activeTab === 'achievements' && (
+                        <div key="achievements-tab" className="tab-content">
+                            <h2 style={{fontSize:'2rem', fontWeight:800, marginBottom:'1.5rem'}}>Your Achievements</h2>
+                            <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))'}}>
+                                {[
+                                    { id: 'water', label: 'H2O Hero', goal: goals.water, current: dailyData.water, icon: '💧', desc: 'Hit your water goal' },
+                                    { id: 'cal', label: 'Calorie Master', goal: goals.calories, current: dailyData.calories, icon: '🎯', desc: 'Stay under calorie limit' },
+                                    { id: 'ex', label: 'Iron Heart', goal: goals.exercise, current: dailyData.exercise, icon: '🔥', desc: 'Hit exercise goal' },
+                                    { id: 'sleep', label: 'Sleep King', goal: goals.sleep, current: dailyData.sleep, icon: '🌙', desc: 'Get full nights rest' }
+                                ].map(badge => {
+                                    const isAchieved = badge.id === 'cal' ? (badge.current <= badge.goal && badge.current > 0) : (badge.current >= badge.goal);
+                                    return (
+                                        <div key={badge.id} className="insight-card" style={{
+                                            textAlign:'center', 
+                                            opacity: isAchieved ? 1 : 0.4, 
+                                            transform: isAchieved ? 'scale(1)' : 'scale(0.95)',
+                                            border: isAchieved ? '2px solid var(--accent-color)' : '1px solid rgba(0,0,0,0.05)',
+                                            background: isAchieved ? 'var(--accent-glow)' : 'white'
+                                        }}>
+                                            <div style={{fontSize:'3rem', marginBottom:'1rem'}}>{badge.icon}</div>
+                                            <h4 style={{fontWeight:800, color: isAchieved ? 'var(--accent-color)' : 'var(--text-muted)'}}>{badge.label}</h4>
+                                            <p style={{fontSize:'0.7rem', color:'var(--text-muted)', marginTop:'0.5rem'}}>{badge.desc}</p>
+                                            {isAchieved && <div style={{marginTop:'1rem', fontSize:'0.6rem', fontWeight:800, color:'var(--accent-color)', textTransform:'uppercase'}}>Unlocked Today! ✨</div>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 
