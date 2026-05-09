@@ -345,11 +345,11 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
 
     return (
         <div className="dashboard-main">
-            <header style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'1rem'}}>
-                <div style={{display:'flex', alignItems:'center', gap:'2rem'}}>
-                    <h1 className="weightless-float" style={{fontSize: '3rem', fontWeight: 800}}>HealthFlow</h1>
-                    <div className="date-picker-container" style={{background:'white', padding:'0.5rem 1rem', borderRadius:'12px', border:'1px solid rgba(0,0,0,0.1)', display:'flex', alignItems:'center', gap:'0.5rem'}}>
-                        <input type="date" value={selectedDate} max={todayStr} onChange={e => setSelectedDate(e.target.value)} style={{border:'none', background:'none', padding:0, fontSize:'0.9rem', width:'130px'}} />
+            <header style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'1rem', padding:'1rem 0'}}>
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'1rem', width:'100%'}}>
+                    <h1 className="weightless-float" style={{fontSize: 'clamp(2rem, 8vw, 3rem)', fontWeight: 800, margin: 0}}>HealthFlow</h1>
+                    <div className="date-picker-container" style={{background:'white', padding:'0.5rem 1rem', borderRadius:'14px', border:'1px solid rgba(0,0,0,0.1)', display:'flex', alignItems:'center', gap:'0.5rem', boxShadow:'0 4px 10px rgba(0,0,0,0.03)'}}>
+                        <input type="date" value={selectedDate} max={todayStr} onChange={e => setSelectedDate(e.target.value)} style={{border:'none', background:'none', padding:0, fontSize:'0.9rem', fontWeight:600, width:'130px', color:'var(--text-main)'}} />
                     </div>
                 </div>
             </header>
