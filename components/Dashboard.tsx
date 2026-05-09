@@ -20,6 +20,29 @@ ChartJS.register( CategoryScale, LinearScale, PointElement, LineElement, Title, 
 
 const MACRO_COLORS = ['#6366f1', '#10b981', '#f59e0b'];
 
+const Clock = React.memo(() => {
+    const [dateTime, setDateTime] = useState({ date: '', time: '' });
+    useEffect(() => {
+        const update = () => {
+            const now = new Date();
+            setDateTime({
+                date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
+                time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            });
+        };
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="date-time-display">
+            <span style={{fontSize:'0.9rem', color:'var(--text-muted)'}}>{dateTime.date}</span>
+            <span style={{fontSize:'1.1rem', fontWeight:600}}>{dateTime.time}</span>
+        </div>
+    );
+});
+
 export default function Dashboard() {
     const todayStr = new Date().toISOString().split('T')[0];
     const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -27,7 +50,6 @@ export default function Dashboard() {
     const [theme, setTheme] = useState('');
     const [units, setUnits] = useState('metric');
     const [showSettings, setShowSettings] = useState(false);
-    const [dateTime, setDateTime] = useState({ date: '', time: '' });
     const [isClient, setIsClient] = useState(false);
     
     const [allLogs, setAllLogs] = useState<Record<string, any>>({});
@@ -59,8 +81,8 @@ export default function Dashboard() {
         const savedAllLogs = localStorage.getItem('allLogs');
         const savedGoals = localStorage.getItem('goals');
         
-        if (savedTheme) setTheme(savedTheme);
-        if (savedUnits) setUnits(savedUnits);
+        if (savedTheme) setTheme(savedTheme || '');
+        if (savedUnits) setUnits(savedUnits || 'metric');
         if (savedGoals) setGoals(JSON.parse(savedGoals));
         
         if (savedAllLogs) {
@@ -69,17 +91,7 @@ export default function Dashboard() {
             if (logs[todayStr]) setDailyData(logs[todayStr]);
         }
         const savedKey = localStorage.getItem('geminiKey');
-        if (savedKey) setGeminiKey(savedKey);
-
-        const update = () => {
-            const now = new Date();
-            setDateTime({
-                date: now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
-                time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-            });
-        };
-        update();
-        setInterval(update, 1000);
+        if (savedKey) setGeminiKey(savedKey || '');
     }, []);
 
     // Load data when date changes
@@ -528,7 +540,7 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
             </div>
 
             <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️</button>
-            <div className="date-time-display"><span style={{fontSize:'0.9rem', color:'var(--text-muted)'}}>{dateTime.date}</span><span style={{fontSize:'1.1rem', fontWeight:600}}>{dateTime.time}</span></div>
+            <Clock />
 
             {showSettings && (
                 <div className="modal-overlay" onClick={() => setShowSettings(false)}>
