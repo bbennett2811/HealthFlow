@@ -111,23 +111,41 @@ export default function Dashboard() {
         }
     }, [theme, units, goals, geminiKey, isClient]);
 
-    const handleSaveLog = () => {
-        if (selectedDate > todayStr) {
-            alert("Whoops! You cannot log data for the future!");
-            return;
-        }
-        const newAllLogs = { ...allLogs, [selectedDate]: dailyData };
-        setAllLogs(newAllLogs);
-        localStorage.setItem('allLogs', JSON.stringify(newAllLogs));
-        alert(`Journal entry saved! Your progress is now persistent.`);
-    };
-
-    const handleAddFoodToTotal = (kcal: number) => {
-        const updatedData = { ...dailyData, calories: dailyData.calories + kcal };
+    const updateMetric = (key: string, value: any) => {
+        const updatedData = { ...dailyData, [key]: value };
         setDailyData(updatedData);
         const newAllLogs = { ...allLogs, [selectedDate]: updatedData };
         setAllLogs(newAllLogs);
         localStorage.setItem('allLogs', JSON.stringify(newAllLogs));
+    };
+
+    const calculateStreaks = (dataKey: string, goal: number, isLowerBetter: boolean = false) => {
+        let currentStreak = 0;
+        let bestStreak = 0;
+        const sortedDates = Object.keys(allLogs).sort().reverse();
+        
+        // Current Streak (Starting from today/yesterday)
+        for (const date of sortedDates) {
+            const val = allLogs[date][dataKey];
+            const hit = isLowerBetter ? (val > 0 && val <= goal) : (val >= goal);
+            if (hit) currentStreak++;
+            else break;
+        }
+
+        // Best Streak (All time)
+        let tempStreak = 0;
+        Object.keys(allLogs).sort().forEach(date => {
+            const val = allLogs[date][dataKey];
+            const hit = isLowerBetter ? (val > 0 && val <= goal) : (val >= goal);
+            if (hit) {
+                tempStreak++;
+                if (tempStreak > bestStreak) bestStreak = tempStreak;
+            } else {
+                tempStreak = 0;
+            }
+        });
+
+        return { current: currentStreak, best: bestStreak };
     };
 
     const [apiStatus, setApiStatus] = useState<'idle' | 'searching' | 'error' | 'no-results'>('idle');
@@ -410,17 +428,17 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                                 <div className="form-group">
                                     <label>Water (Litres)</label>
                                     <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
-                                        <button onClick={() => setDailyData({...dailyData, water: Math.max(0, (dailyData.water || 0) - 0.25)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
-                                        <input type="number" value={dailyData.water || ''} onChange={e => setDailyData({...dailyData, water: parseFloat(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
-                                        <button onClick={() => setDailyData({...dailyData, water: (dailyData.water || 0) + 0.25})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                        <button onClick={() => updateMetric('water', Math.max(0, (dailyData.water || 0) - 0.25))} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.water || ''} onChange={e => updateMetric('water', parseFloat(e.target.value) || 0)} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => updateMetric('water', (dailyData.water || 0) + 0.25)} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
                                     </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Exercise (Minutes)</label>
                                     <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
-                                        <button onClick={() => setDailyData({...dailyData, exercise: Math.max(0, (dailyData.exercise || 0) - 15)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
-                                        <input type="number" value={dailyData.exercise || ''} onChange={e => setDailyData({...dailyData, exercise: parseInt(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
-                                        <button onClick={() => setDailyData({...dailyData, exercise: (dailyData.exercise || 0) + 15})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                        <button onClick={() => updateMetric('exercise', Math.max(0, (dailyData.exercise || 0) - 15))} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.exercise || ''} onChange={e => updateMetric('exercise', parseInt(e.target.value) || 0)} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => updateMetric('exercise', (dailyData.exercise || 0) + 15)} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
                                     </div>
                                 </div>
                             </div>
@@ -428,9 +446,9 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                                 <div className="form-group" style={{gridColumn: 'span 2'}}>
                                     <label>Sleep (Hours)</label>
                                     <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
-                                        <button onClick={() => setDailyData({...dailyData, sleep: Math.max(0, (dailyData.sleep || 0) - 0.5)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
-                                        <input type="number" value={dailyData.sleep || ''} onChange={e => setDailyData({...dailyData, sleep: parseFloat(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
-                                        <button onClick={() => setDailyData({...dailyData, sleep: (dailyData.sleep || 0) + 0.5})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                        <button onClick={() => updateMetric('sleep', Math.max(0, (dailyData.sleep || 0) - 0.5))} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.sleep || ''} onChange={e => updateMetric('sleep', parseFloat(e.target.value) || 0)} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => updateMetric('sleep', (dailyData.sleep || 0) + 0.5)} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
                                     </div>
                                 </div>
                             </div>
@@ -538,28 +556,36 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                         <div key="achievements-tab" className="tab-content">
                             <h2 style={{fontSize:'2rem', fontWeight:800, marginBottom:'1.5rem'}}>Your Achievements</h2>
                             <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))'}}>
-                                {[
-                                    { id: 'water', label: 'H2O Hero', goal: goals.water, current: dailyData.water, icon: '💧', desc: 'Hit your water goal' },
-                                    { id: 'cal', label: 'Calorie Master', goal: goals.calories, current: dailyData.calories, icon: '🎯', desc: 'Stay under calorie limit' },
-                                    { id: 'ex', label: 'Iron Heart', goal: goals.exercise, current: dailyData.exercise, icon: '🔥', desc: 'Hit exercise goal' },
-                                    { id: 'sleep', label: 'Sleep King', goal: goals.sleep, current: dailyData.sleep, icon: '🌙', desc: 'Get full nights rest' }
-                                ].map(badge => {
-                                    const isAchieved = badge.id === 'cal' ? (badge.current <= badge.goal && badge.current > 0) : (badge.current >= badge.goal);
-                                    return (
-                                        <div key={badge.id} className="insight-card" style={{
-                                            textAlign:'center', 
-                                            opacity: isAchieved ? 1 : 0.4, 
-                                            transform: isAchieved ? 'scale(1)' : 'scale(0.95)',
-                                            border: isAchieved ? '2px solid var(--accent-color)' : '1px solid rgba(0,0,0,0.05)',
-                                            background: isAchieved ? 'var(--accent-glow)' : 'white'
-                                        }}>
-                                            <div style={{fontSize:'3rem', marginBottom:'1rem'}}>{badge.icon}</div>
-                                            <h4 style={{fontWeight:800, color: isAchieved ? 'var(--accent-color)' : 'var(--text-muted)'}}>{badge.label}</h4>
-                                            <p style={{fontSize:'0.7rem', color:'var(--text-muted)', marginTop:'0.5rem'}}>{badge.desc}</p>
-                                            {isAchieved && <div style={{marginTop:'1rem', fontSize:'0.6rem', fontWeight:800, color:'var(--accent-color)', textTransform:'uppercase'}}>Unlocked Today! ✨</div>}
-                                        </div>
-                                    );
-                                })}
+                                    {
+                                        [
+                                            { id: 'water', label: 'H2O Hero', goal: goals.water, current: dailyData.water, icon: '💧', desc: `Target: ${goals.water}L daily` },
+                                            { id: 'calories', label: 'Calorie Master', goal: goals.calories, current: dailyData.calories, icon: '🎯', desc: `Target: Under ${goals.calories}kcal` },
+                                            { id: 'exercise', label: 'Iron Heart', goal: goals.exercise, current: dailyData.exercise, icon: '🔥', desc: `Target: ${goals.exercise}min daily` },
+                                            { id: 'sleep', label: 'Sleep King', goal: goals.sleep, current: dailyData.sleep, icon: '🌙', desc: `Target: ${goals.sleep}hr daily` }
+                                        ].map(badge => {
+                                            const stats = calculateStreaks(badge.id, badge.goal, badge.id === 'calories');
+                                            const isAchieved = stats.current > 0;
+                                            return (
+                                                <div key={badge.id} className="insight-card" style={{
+                                                    textAlign:'center', 
+                                                    opacity: isAchieved ? 1 : 0.3, 
+                                                    transform: isAchieved ? 'scale(1.05)' : 'scale(1)',
+                                                    border: isAchieved ? '2px solid var(--accent-color)' : '1px solid rgba(0,0,0,0.05)',
+                                                    background: isAchieved ? 'var(--accent-glow)' : 'white',
+                                                    transition: 'all 0.3s ease'
+                                                }}>
+                                                    <div style={{fontSize:'3rem', marginBottom:'1rem'}}>{badge.icon}</div>
+                                                    <h4 style={{fontWeight:800, color: isAchieved ? 'var(--accent-color)' : 'var(--text-muted)'}}>{badge.label}</h4>
+                                                    <p style={{fontSize:'0.65rem', color:'var(--text-muted)', marginTop:'0.4rem'}}>{badge.desc}</p>
+                                                    <div style={{marginTop:'1rem', background:'rgba(0,0,0,0.03)', padding:'0.5rem', borderRadius:'10px'}}>
+                                                        <div style={{fontSize:'0.6rem', color:'var(--text-muted)', textTransform:'uppercase', fontWeight:800}}>Current Streak</div>
+                                                        <div style={{fontSize:'1.2rem', fontWeight:800, color: isAchieved ? 'var(--accent-color)' : 'var(--text-muted)'}}>{stats.current} Days</div>
+                                                        <div style={{fontSize:'0.6rem', color:'var(--text-muted)', marginTop:'0.4rem'}}>Best Record: {stats.best} Days</div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    }
                             </div>
                         </div>
                     )}
