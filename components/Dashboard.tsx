@@ -544,8 +544,6 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                                 <label style={{color: 'var(--accent-color)', fontWeight: 700}}>TOTAL CALORIES RECORDED</label>
                                 <div style={{fontSize:'2.5rem', fontWeight:800}}>{dailyData.calories.toLocaleString()} <span style={{fontSize:'1rem', fontWeight:400}}>kcal</span></div>
                             </div>
-
-                            <button className="submit-btn" style={{marginTop:'2rem', fontSize:'1.1rem', padding:'1.2rem'}} onClick={handleSaveLog}>Save Journal Entry</button>
                         </div>
                     )}
 
