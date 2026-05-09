@@ -16,14 +16,11 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
-        <script type="importmap" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          imports: {
-            "@google/generative-ai": "https://esm.run/@google/generative-ai"
-          }
-        }) }} />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body style={{ background: '#f8fafc', margin: 0, minHeight: '100vh' }}>
+        {children}
+      </body>
     </html>
   );
 }

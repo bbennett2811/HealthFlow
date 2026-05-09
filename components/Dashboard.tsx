@@ -297,7 +297,6 @@ export default function Dashboard() {
     const isToday = selectedDate === todayStr;
     const displayDateName = isToday ? 'Today' : new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-    if (!isClient) return null;
 
     return (
         <div className="dashboard-main">
