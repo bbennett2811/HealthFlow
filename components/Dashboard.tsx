@@ -118,16 +118,34 @@ export default function Dashboard() {
         localStorage.setItem('allLogs', JSON.stringify(newAllLogs));
     };
 
+    const [apiStatus, setApiStatus] = useState<'idle' | 'searching' | 'error' | 'no-results'>('idle');
+
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (foodQuery.length > 2) {
+                setApiStatus('searching');
                 setIsSearching(true);
                 try {
                     const res = await fetch(`/api/food-search?q=${encodeURIComponent(foodQuery)}`);
+                    if (!res.ok) throw new Error('API unreachable');
                     const data = await res.json();
-                    if (data.products) setSuggestions(data.products);
-                } catch (err) { console.error(err); } finally { setIsSearching(false); }
-            } else { setSuggestions([]); }
+                    if (data.products && data.products.length > 0) {
+                        setSuggestions(data.products);
+                        setApiStatus('idle');
+                    } else {
+                        setSuggestions([]);
+                        setApiStatus('no-results');
+                    }
+                } catch (err) { 
+                    console.error('Search Connection Error:', err); 
+                    setApiStatus('error');
+                } finally { 
+                    setIsSearching(false); 
+                }
+            } else { 
+                setSuggestions([]); 
+                setApiStatus('idle');
+            }
         }, 500);
         return () => clearTimeout(delayDebounceFn);
     }, [foodQuery]);
@@ -332,8 +350,26 @@ export default function Dashboard() {
                             </div>
                             {!isManualMode ? (
                                 <>
-                                    <div className="form-group"><label>Search Food</label><input type="text" value={foodQuery} onChange={e => setFoodQuery(e.target.value)} placeholder="What did you eat?" /></div>
+                                    <div className="form-group">
+                                        <label>Search Food</label>
+                                        <input type="text" value={foodQuery} onChange={e => setFoodQuery(e.target.value)} placeholder="What did you eat?" />
+                                    </div>
+                                    
+                                    {apiStatus === 'searching' && <div style={{textAlign:'center', padding:'1rem', fontSize:'0.8rem', color:'var(--accent-color)'}}>Searching global databases... 🕵️‍♂️</div>}
+                                    {apiStatus === 'error' && <div style={{textAlign:'center', padding:'1rem', fontSize:'0.8rem', color:'#ef4444', background:'rgba(239, 68, 68, 0.05)', borderRadius:'12px'}}>⚠️ Connection Error: Check folder structure on GitHub.</div>}
+                                    {apiStatus === 'no-results' && <div style={{textAlign:'center', padding:'1rem', fontSize:'0.8rem', color:'var(--text-muted)'}}>No results found. Try "Apple" or "Egg".</div>}
+                                    
                                     <div className="grid-2"><div className="form-group"><label>Qty</label><input type="number" value={foodQty} onChange={e => {setFoodQty(e.target.value); calculateStats(selectedFood, e.target.value, foodUnit);}} /></div><div className="form-group"><label>Unit</label><select value={foodUnit} onChange={e => {setFoodUnit(e.target.value); calculateStats(selectedFood, foodQty, e.target.value);}}><option value="g">g</option><option value="ml">ml</option><option value="l">L</option><option value="oz">oz</option><option value="lb">lb</option></select></div></div>
+                                    
+                                    {suggestions.length > 0 && (
+                                        <div style={{background:'rgba(0,0,0,0.03)', borderRadius:'16px', padding:'0.5rem', marginBottom:'1.5rem', maxHeight:'200px', overflowY:'auto'}}>
+                                            {suggestions.map((s, i) => (
+                                                <div key={i} onClick={() => { setSelectedFood(s); calculateStats(s, foodQty, foodUnit); setSuggestions([]); }} style={{padding:'0.8rem', cursor:'pointer', borderBottom:'1px solid rgba(0,0,0,0.05)', fontSize:'0.9rem', background: selectedFood?.id === s.id ? 'var(--accent-glow)' : 'transparent'}}>
+                                                    <strong>{s.name}</strong> <span style={{fontSize:'0.7rem', color:'var(--text-muted)'}}>({s.brand})</span> • {s.kcal} kcal
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                     {calculatedKcal > 0 && <div className="calculated-box" style={{fontSize:'2rem', fontWeight:800, color:'var(--accent-color)'}}>{calculatedKcal} kcal</div>}
                                     <button className="submit-btn" style={{marginTop:'1rem'}} onClick={() => { if (calculatedKcal > 0) handleAddFoodToTotal(calculatedKcal); alert('Food added!'); }}>Add to {isToday ? 'Today' : 'Journal'}</button>
                                 </>
