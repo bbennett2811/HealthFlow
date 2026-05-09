@@ -146,7 +146,18 @@ input:focus, textarea:focus { border-color: var(--accent-color); box-shadow: 0 0
     .submit-btn { padding: 1.2rem; font-size: 1rem; }
     .modal { width: 95%; padding: 1.5rem; }
     .insight-card { padding: 1rem !important; }
-    .date-time-display { bottom: 10px; right: 10px; font-size: 0.8rem; }
+    .date-time-display { display: none; }
+    .settings-btn { 
+        width: 40px; 
+        height: 40px; 
+        font-size: 1rem; 
+        bottom: 15px; 
+        right: 15px; 
+        opacity: 0.4;
+        background: rgba(0,0,0,0.1);
+        box-shadow: none;
+    }
+    .settings-btn:hover { opacity: 1; background: white; }
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
