@@ -319,9 +319,9 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                <div className="content-area" style={{animation: 'fadeIn 0.4s ease-out'}}>
+                <div className="content-area">
                     {activeTab === 'journal' && (
-                        <div>
+                        <div key="journal-tab" className="tab-content">
                             <div style={{display:'flex', alignItems:'center', gap:'1rem', marginBottom:'2rem'}}>
                                 <h2 style={{fontSize:'2.5rem', fontWeight:800, color:'var(--text-main)'}}>{displayDateName}</h2>
                                 {!isToday && <span style={{background:'rgba(99, 102, 241, 0.1)', color:'var(--accent-color)', padding:'6px 12px', borderRadius:'20px', fontSize:'0.7rem', fontWeight:700, border:'1px solid var(--accent-color)'}}>Viewing Past Entry</span>}
@@ -445,14 +445,14 @@ export default function Dashboard() {
                     )}
 
                     {activeTab === 'daily-progress' && (
-                        <div>
+                        <div key="progress-tab" className="tab-content">
                             {allGoalsHit && <div style={{background:'var(--accent-color)', color:'white', padding:'1rem', borderRadius:'16px', textAlign:'center', marginBottom:'2rem', fontWeight:700}}>✨ Goal reached for {displayDateName}! 🚀</div>}
                             <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))'}}>{metrics.map(m => <ProgressCard key={m.label} {...m} />)}</div>
                         </div>
                     )}
 
                     {activeTab === 'insights' && (
-                        <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))'}}>
+                        <div key="insights-tab" className="tab-content" style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:'1.5rem'}}>
                             {renderMiniChart('Weight', 'weight', goals.weight, units === 'metric' ? 'kg' : 'lb')}
                             {renderMiniChart('Water', 'water', goals.water, 'L')}
                             {renderMiniChart('Calories', 'calories', goals.calories, 'kcal')}
@@ -462,7 +462,7 @@ export default function Dashboard() {
                     )}
 
                     {activeTab === 'ai-recipes' && (
-                        <div className="ai-recipes-container">
+                        <div key="ai-tab" className="tab-content ai-recipes-container">
                             <h2 style={{fontSize:'2rem', fontWeight:800, marginBottom:'1.5rem'}}>AI Recipe Generator</h2>
                             <div className="form-group">
                                 <label>What are you craving?</label>
@@ -497,7 +497,7 @@ export default function Dashboard() {
                     )}
 
                     {activeTab === 'goals' && (
-                        <div>
+                        <div key="goals-tab" className="tab-content">
                             <div className="form-group"><label>Target Weight</label><input type="number" value={goals.weight} onChange={e => setGoals({...goals, weight: parseFloat(e.target.value)})} /></div>
                             <div className="grid-2"><div className="form-group"><label>Water Goal (L)</label><input type="number" value={goals.water} onChange={e => setGoals({...goals, water: parseFloat(e.target.value)})} /></div><div className="form-group"><label>Calorie Limit</label><input type="number" value={goals.calories} onChange={e => setGoals({...goals, calories: parseInt(e.target.value)})} /></div></div>
                             <div className="grid-2"><div className="form-group"><label>Exercise Goal (Min)</label><input type="number" value={goals.exercise} onChange={e => setGoals({...goals, exercise: parseInt(e.target.value)})} /></div><div className="form-group"><label>Sleep Goal (Hr)</label><input type="number" value={goals.sleep} onChange={e => setGoals({...goals, sleep: parseFloat(e.target.value)})} /></div></div>

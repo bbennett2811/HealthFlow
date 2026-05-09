@@ -133,3 +133,7 @@ input:focus, textarea:focus { border-color: var(--accent-color); box-shadow: 0 0
 @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
 
 .weightless-float { animation: float 6s ease-in-out infinite; }
+
+.tab-content {
+    animation: fadeIn 0.5s ease-out;
+}
