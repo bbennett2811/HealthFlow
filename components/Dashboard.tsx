@@ -319,7 +319,7 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                <div className="content-area">
+                <div className="content-area" style={{animation: 'fadeIn 0.4s ease-out'}}>
                     {activeTab === 'journal' && (
                         <div>
                             <div style={{display:'flex', alignItems:'center', gap:'1rem', marginBottom:'2rem'}}>
@@ -327,13 +327,45 @@ export default function Dashboard() {
                                 {!isToday && <span style={{background:'rgba(99, 102, 241, 0.1)', color:'var(--accent-color)', padding:'6px 12px', borderRadius:'20px', fontSize:'0.7rem', fontWeight:700, border:'1px solid var(--accent-color)'}}>Viewing Past Entry</span>}
                             </div>
 
+                            <div style={{background:'rgba(99, 102, 241, 0.05)', padding:'2rem', borderRadius:'28px', border:'1px solid var(--accent-glow)', marginBottom:'2.5rem', textAlign:'center'}}>
+                                <label style={{fontSize:'0.8rem', fontWeight:800, color:'var(--accent-color)', marginBottom:'1rem', display:'block'}}>CURRENT WEIGHT ({units === 'metric' ? 'kg' : 'lb'})</label>
+                                <input 
+                                    type="number" 
+                                    step="0.1" 
+                                    value={dailyData.weight} 
+                                    onChange={e => setDailyData({...dailyData, weight: e.target.value})} 
+                                    placeholder="00.0"
+                                    style={{fontSize:'3.5rem', fontWeight:800, background:'none', border:'none', textAlign:'center', width:'100%', color:'var(--text-main)', outline:'none'}}
+                                />
+                            </div>
+
                             <div className="grid-2">
-                                <div className="form-group"><label>Weight ({units === 'metric' ? 'kg' : 'lb'})</label><input type="number" step="0.1" value={dailyData.weight} onChange={e => setDailyData({...dailyData, weight: e.target.value})} /></div>
-                                <div className="form-group"><label>Water (Litres)</label><input type="number" value={dailyData.water || ''} onChange={e => setDailyData({...dailyData, water: parseFloat(e.target.value) || 0})} /></div>
+                                <div className="form-group">
+                                    <label>Water (Litres)</label>
+                                    <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+                                        <button onClick={() => setDailyData({...dailyData, water: Math.max(0, (dailyData.water || 0) - 0.25)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.water || ''} onChange={e => setDailyData({...dailyData, water: parseFloat(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => setDailyData({...dailyData, water: (dailyData.water || 0) + 0.25})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label>Exercise (Minutes)</label>
+                                    <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+                                        <button onClick={() => setDailyData({...dailyData, exercise: Math.max(0, (dailyData.exercise || 0) - 15)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.exercise || ''} onChange={e => setDailyData({...dailyData, exercise: parseInt(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => setDailyData({...dailyData, exercise: (dailyData.exercise || 0) + 15})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                    </div>
+                                </div>
                             </div>
                             <div className="grid-2">
-                                <div className="form-group"><label>Sleep (Hours)</label><input type="number" value={dailyData.sleep || ''} onChange={e => setDailyData({...dailyData, sleep: parseFloat(e.target.value) || 0})} /></div>
-                                <div className="form-group"><label>Exercise (Minutes)</label><input type="number" value={dailyData.exercise || ''} onChange={e => setDailyData({...dailyData, exercise: parseInt(e.target.value) || 0})} /></div>
+                                <div className="form-group" style={{gridColumn: 'span 2'}}>
+                                    <label>Sleep (Hours)</label>
+                                    <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+                                        <button onClick={() => setDailyData({...dailyData, sleep: Math.max(0, (dailyData.sleep || 0) - 0.5)})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 10px rgba(0,0,0,0.05)'}}>−</button>
+                                        <input type="number" value={dailyData.sleep || ''} onChange={e => setDailyData({...dailyData, sleep: parseFloat(e.target.value) || 0})} style={{textAlign:'center', fontWeight:700}} />
+                                        <button onClick={() => setDailyData({...dailyData, sleep: (dailyData.sleep || 0) + 0.5})} style={{width:'45px', height:'45px', borderRadius:'12px', border:'none', background:'var(--accent-color)', color:'white', fontSize:'1.2rem', fontWeight:700, cursor:'pointer', boxShadow:'0 4px 15px var(--accent-glow)'}}>+</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <hr style={{margin:'2.5rem 0', opacity:0.1}} />
