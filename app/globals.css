@@ -11,28 +11,29 @@
 }
 
 /* 12-Theme System */
-body.theme-ocean { --accent-color: #0d9488; --accent-glow: rgba(13, 148, 136, 0.15); --bg-gradient: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); }
-body.theme-sunset { --accent-color: #e11d48; --accent-glow: rgba(225, 29, 72, 0.15); --bg-gradient: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); }
-body.theme-forest { --accent-color: #059669; --accent-glow: rgba(5, 150, 105, 0.15); --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
-body.theme-midnight { --accent-color: #475569; --accent-glow: rgba(71, 85, 105, 0.15); --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
-body.theme-sakura { --accent-color: #db2777; --accent-glow: rgba(219, 39, 119, 0.15); --bg-gradient: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
-body.theme-lavender { --accent-color: #8b5cf6; --accent-glow: rgba(139, 92, 246, 0.15); --bg-gradient: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
-body.theme-aurora { --accent-color: #d946ef; --accent-glow: rgba(217, 70, 239, 0.15); --bg-gradient: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); }
-body.theme-solar { --accent-color: #f59e0b; --accent-glow: rgba(245, 158, 11, 0.15); --bg-gradient: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
-body.theme-frost { --accent-color: #06b6d4; --accent-glow: rgba(6, 182, 212, 0.15); --bg-gradient: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); }
-body.theme-vulcan { --accent-color: #991b1b; --accent-glow: rgba(153, 27, 27, 0.15); --bg-gradient: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
-body.theme-nordic { --accent-color: #1e293b; --accent-glow: rgba(30, 41, 59, 0.15); --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
-body.theme-spring { --accent-color: #10b981; --accent-glow: rgba(16, 185, 129, 0.15); --bg-gradient: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+.theme-ocean { --accent-color: #0d9488; --accent-glow: rgba(13, 148, 136, 0.1); --bg-main: #f0fdfa; }
+.theme-sunset { --accent-color: #e11d48; --accent-glow: rgba(225, 29, 72, 0.1); --bg-main: #fff1f2; }
+.theme-forest { --accent-color: #059669; --accent-glow: rgba(5, 150, 105, 0.1); --bg-main: #f0fdf4; }
+.theme-midnight { --accent-color: #818cf8; --accent-glow: rgba(129, 140, 248, 0.1); --bg-main: #0f172a; --text-main: #f8fafc; --text-muted: #94a3b8; }
+.theme-sakura { --accent-color: #db2777; --accent-glow: rgba(219, 39, 119, 0.1); --bg-main: #fdf2f8; }
+.theme-lavender { --accent-color: #8b5cf6; --accent-glow: rgba(139, 92, 246, 0.1); --bg-main: #f5f3ff; }
+.theme-aurora { --accent-color: #d946ef; --accent-glow: rgba(217, 70, 239, 0.1); --bg-main: #fdf4ff; }
+.theme-solar { --accent-color: #f59e0b; --accent-glow: rgba(245, 158, 11, 0.1); --bg-main: #fffbeb; }
+.theme-frost { --accent-color: #06b6d4; --accent-glow: rgba(6, 182, 212, 0.1); --bg-main: #ecfeff; }
+.theme-vulcan { --accent-color: #ef4444; --accent-glow: rgba(239, 68, 68, 0.1); --bg-main: #111827; --text-main: #f8fafc; --text-muted: #94a3b8; }
+.theme-nordic { --accent-color: #1e293b; --accent-glow: rgba(30, 41, 59, 0.15); --bg-main: #f1f5f9; }
+.theme-spring { --accent-color: #10b981; --accent-glow: rgba(16, 185, 129, 0.1); --bg-main: #f0fdfa; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body { 
-    background: var(--bg-gradient); 
-    min-height: 100vh; 
+    background: var(--bg-main, #f8fafc); 
     color: var(--text-main); 
-    padding: 2rem; 
-    overflow-x: hidden; 
-    transition: background 0.5s ease;
+    margin: 0; 
+    transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
+    min-height: 100vh;
+    padding: 2rem;
+    overflow-x: hidden;
     font-family: 'Inter', sans-serif;
 }
 
