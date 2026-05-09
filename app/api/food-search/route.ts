@@ -16,8 +16,10 @@ export async function GET(request: Request) {
 
   if (!query || query.length < 2) return NextResponse.json({ products: [] });
 
-  // 1. Local Fallback
-  const localMatches = LOCAL_FALLBACK.filter(f => f.name.toLowerCase().includes(query));
+  // 1. Local Fallback (Improved with unit info)
+  const localMatches = LOCAL_FALLBACK.filter(f => f.name.toLowerCase().includes(query)).map(f => ({
+      ...f, servingWeight: 50, servingText: '1 piece'
+  }));
   results.push(...localMatches);
 
   // 2. OpenFoodFacts (Global)
@@ -36,7 +38,9 @@ export async function GET(request: Request) {
                 carbs: parseFloat(p.nutriments?.['carbohydrates_100g'] || 0),
                 fat: parseFloat(p.nutriments?.['fat_100g'] || 0),
                 id: `off-${p.id}`,
-                source: 'OFF'
+                source: 'OFF',
+                servingWeight: 100,
+                servingText: '100g'
             });
         });
     }
@@ -59,7 +63,9 @@ export async function GET(request: Request) {
                     carbs: nutrients.find((n: any) => n.nutrientName.toLowerCase().includes('carbohydrate'))?.value || 0,
                     fat: nutrients.find((n: any) => n.nutrientName.toLowerCase().includes('total lipid'))?.value || 0,
                     id: `usda-${food.fdcId}`,
-                    source: 'USDA'
+                    source: 'USDA',
+                    servingWeight: 100,
+                    servingText: '100g'
                 });
             });
         }
@@ -93,10 +99,16 @@ export async function GET(request: Request) {
                     const foodArray = Array.isArray(foods) ? foods : [foods];
                     foodArray.forEach((f: any) => {
                         const desc = f.food_description || "";
+                        // Advanced Parse: "Per 100g", "Per 1 item", "Per 1 slice"
+                        const servingMatch = desc.match(/Per\s*([\d.]+)?\s*([a-zA-Z\s]+)\s*-/i);
+                        const servingText = servingMatch ? servingMatch[0].replace('-', '').trim() : '100g';
+                        const isPiece = /piece|item|slice|egg|unit/i.test(servingText);
+
                         const kcal = desc.match(/Calories:\s*(\d+)/i)?.[1] || 0;
                         const protein = desc.match(/Protein:\s*([\d.]+)/i)?.[1] || 0;
                         const carbs = desc.match(/Carbs:\s*([\d.]+)/i)?.[1] || 0;
                         const fat = desc.match(/Fat:\s*([\d.]+)/i)?.[1] || 0;
+                        
                         results.push({
                             name: f.food_name,
                             brand: f.brand_name || "Branded",
@@ -105,7 +117,10 @@ export async function GET(request: Request) {
                             carbs: parseFloat(carbs as string),
                             fat: parseFloat(fat as string),
                             id: `fs-${f.food_id}`,
-                            source: 'FS'
+                            source: 'FS',
+                            servingWeight: isPiece ? 1 : 100, // Normalized for FS logic
+                            servingText: servingText,
+                            isPiece: isPiece
                         });
                     });
                 }
@@ -113,6 +128,14 @@ export async function GET(request: Request) {
         }
     } catch (e) { console.error('FatSecret Failed'); }
   }
+
+  const finalProducts = results
+    .filter(p => p.kcal > 0)
+    .filter((v, i, a) => a.findIndex(t => t.name === v.name) === i)
+    .slice(0, 15);
+
+  return NextResponse.json({ products: finalProducts });
+}
 
   const finalProducts = results
     .filter(p => p.kcal > 0)

@@ -159,15 +159,32 @@ export default function Dashboard() {
     const calculateStats = (food: any, qty: string, unit: string) => {
         const q = parseFloat(qty);
         if (!food || isNaN(q)) { setCalculatedKcal(0); setCalculatedMacros([]); return; }
-        let weightInGrams = q;
-        if (unit === 'ml') weightInGrams = q;
-        if (unit === 'l') weightInGrams = q * 1000;
-        if (unit === 'oz') weightInGrams = q * 28.35;
-        if (unit === 'lb') weightInGrams = q * 453.59;
-        const ratio = weightInGrams / 100;
-        const kcal = Math.round(ratio * food.kcal);
+        
+        let ratio = 1;
+        let kcal = 0;
+
+        if (unit === 'piece') {
+            // Use pieces as direct multiplier if the source is piece-based
+            ratio = food.isPiece ? q : (q * (food.servingWeight || 100) / 100);
+            kcal = Math.round(q * food.kcal);
+        } else {
+            let weightInGrams = q;
+            if (unit === 'ml') weightInGrams = q;
+            if (unit === 'l') weightInGrams = q * 1000;
+            if (unit === 'oz') weightInGrams = q * 28.35;
+            if (unit === 'lb') weightInGrams = q * 453.59;
+            
+            const baseWeight = food.isPiece ? (food.servingWeight || 50) : 100;
+            ratio = weightInGrams / baseWeight;
+            kcal = Math.round(ratio * food.kcal);
+        }
+
         setCalculatedKcal(kcal);
-        setCalculatedMacros([{ name: 'Protein', value: Math.round(ratio * food.protein) || 1 }, { name: 'Carbs', value: Math.round(ratio * food.carbs) || 1 }, { name: 'Fat', value: Math.round(ratio * food.fat) || 1 }]);
+        setCalculatedMacros([
+            { name: 'Protein', value: Math.round(ratio * (food.protein || 0)) },
+            { name: 'Carbs', value: Math.round(ratio * (food.carbs || 0)) },
+            { name: 'Fat', value: Math.round(ratio * (food.fat || 0)) }
+        ]);
     };
 
     const handleGenerateRecipe = async () => {
@@ -454,7 +471,23 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                                     {apiStatus === 'error' && <div style={{textAlign:'center', padding:'1rem', fontSize:'0.8rem', color:'#ef4444', background:'rgba(239, 68, 68, 0.05)', borderRadius:'12px'}}>⚠️ Connection Error: Could not reach search server.</div>}
                                     {apiStatus === 'no-results' && <div style={{textAlign:'center', padding:'1rem', fontSize:'0.8rem', color:'var(--text-muted)'}}>No results found. Try "Apple" or "Egg".</div>}
                                     
-                                    <div className="grid-2"><div className="form-group"><label>Qty</label><input type="number" value={foodQty} onChange={e => {setFoodQty(e.target.value); calculateStats(selectedFood, e.target.value, foodUnit);}} /></div><div className="form-group"><label>Unit</label><select value={foodUnit} onChange={e => {setFoodUnit(e.target.value); calculateStats(selectedFood, foodQty, e.target.value);}}><option value="g">g</option><option value="ml">ml</option><option value="l">L</option><option value="oz">oz</option><option value="lb">lb</option></select></div></div>
+                                    <div className="grid-2">
+                                        <div className="form-group">
+                                            <label>Qty</label>
+                                            <input type="number" value={foodQty} onChange={e => {setFoodQty(e.target.value); calculateStats(selectedFood, e.target.value, foodUnit);}} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Unit</label>
+                                            <select value={foodUnit} onChange={e => {setFoodUnit(e.target.value); calculateStats(selectedFood, foodQty, e.target.value);}}>
+                                                <option value="g">Grams (g)</option>
+                                                <option value="piece">Piece(s) / Serving</option>
+                                                <option value="ml">Milliliters (ml)</option>
+                                                <option value="l">Litres (L)</option>
+                                                <option value="oz">Ounces (oz)</option>
+                                                <option value="lb">Pounds (lb)</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     
                                     {suggestions.length > 0 && (
                                         <div style={{background:'rgba(0,0,0,0.03)', borderRadius:'16px', padding:'0.5rem', marginBottom:'1.5rem', maxHeight:'200px', overflowY:'auto', border:'1px solid rgba(0,0,0,0.05)'}}>
