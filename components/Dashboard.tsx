@@ -283,14 +283,26 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
     }
 
     const safeGoal = goal || 1;
-    const percent = Math.min(Math.round((current / safeGoal) * 100), 100) || 0;
-    const color = percent >= 100 ? '#10b981' : (percent >= 30 ? '#f59e0b' : '#ef4444');
+    const percent = Math.round((current / safeGoal) * 100) || 0;
+    
+    // Contextual Coloring: 
+    // For Calories, >100% is Red (Warning). 
+    // For Water/Exercise/Sleep, >100% is Green (Success).
+    let color = '#ef4444'; // Default Red
+    if (label === 'Calories') {
+        color = percent > 100 ? '#ef4444' : (percent > 85 ? '#f59e0b' : '#10b981');
+    } else {
+        color = percent >= 100 ? '#10b981' : (percent >= 50 ? '#f59e0b' : '#ef4444');
+    }
+
     const r = 35; 
     const circ = 2 * Math.PI * r;
-    const offset = circ - (percent / 100) * circ;
+    // Cap the visual circle at 100% but keep the text percentage real
+    const visualPercent = Math.min(percent, 100);
+    const offset = circ - (visualPercent / 100) * circ;
 
     return (
-        <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center'}}>
+        <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center', border: percent > 100 && label === 'Calories' ? '2px solid rgba(239, 68, 68, 0.2)' : 'none'}}>
             <h4 style={{fontSize:'0.8rem', color:'var(--text-muted)', marginBottom:'1rem'}}>{label.toUpperCase()}</h4>
             <div style={{position:'relative', width:'80px', height:'80px'}}>
                 <svg width="80" height="80" style={{transform:'rotate(-90deg)'}}>
@@ -308,9 +320,9 @@ const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, all
                         style={{transition:'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease'}} 
                     />
                 </svg>
-                <div style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%, -50%)', fontWeight:800, fontSize:'1rem', color}}>{percent}%</div>
+                <div style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%, -50%)', fontWeight:800, fontSize:'1.1rem', color}}>{percent}%</div>
             </div>
-            <div style={{marginTop:'0.5rem', fontSize:'0.7rem', color:'var(--text-muted)'}}>{current}{unit} / {goal}{unit}</div>
+            <div style={{marginTop:'0.8rem', fontSize:'0.75rem', color:'var(--text-muted)', fontWeight:600}}>{current}{unit} / {goal}{unit}</div>
         </div>
     );
 });
