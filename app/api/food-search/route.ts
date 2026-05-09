@@ -136,11 +136,3 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ products: finalProducts });
 }
-
-  const finalProducts = results
-    .filter(p => p.kcal > 0)
-    .filter((v, i, a) => a.findIndex(t => t.name === v.name) === i)
-    .slice(0, 15);
-
-  return NextResponse.json({ products: finalProducts });
-}
