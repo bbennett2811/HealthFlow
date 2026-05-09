@@ -34,24 +34,13 @@ export async function GET(request: Request) {
     );
     results.push(...localMatches);
 
-    // 2. Multi-Source Fetch (USDA, OFF, Nutritionix)
+    // 2. Multi-Source Fetch (USDA, OFF)
     const fetchPromises: any[] = [
-      fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=${encodeURIComponent(query)}&pageSize=5`),
+      fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${process.env.USDA_API_KEY || 'DEMO_KEY'}&query=${encodeURIComponent(query)}&pageSize=5`),
       fetch(`https://uk.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=5`, {
         headers: { 'User-Agent': 'HealthFlow - MacroSearch - 1.0' }
       })
     ];
-
-    // Add Nutritionix if keys are present
-    if (NIX_APP_ID && NIX_APP_KEY) {
-        fetchPromises.push(fetch(`https://trackapi.nutritionix.com/v2/search/instant?query=${encodeURIComponent(query)}`, {
-            headers: {
-                'x-app-id': NIX_APP_ID,
-                'x-app-key': NIX_APP_KEY,
-                'x-remote-user-id': '0'
-            }
-        }));
-    }
 
     const responses = await Promise.allSettled(fetchPromises);
 
@@ -90,23 +79,59 @@ export async function GET(request: Request) {
         });
     }
 
-    // Process Nutritionix (Response index 2, if it exists)
-    if (responses[2] && responses[2].status === 'fulfilled' && responses[2].value.ok) {
-        const data = await responses[2].value.json();
-        // Combined branded and common items from Nix
-        const nixItems = [...(data.branded || []), ...(data.common || [])];
-        nixItems.forEach((p: any) => {
-            results.push({
-                name: p.food_name,
-                brand: p.brand_name || "Nutritionix",
-                kcal: p.nf_calories || 0,
-                protein: 0, // Instant search doesn't return macros, requires second call normally
-                carbs: 0,
-                fat: 0,
-                id: `nix-${p.tag_id || p.nix_item_id}`,
-                source: 'Nix'
+    // 3. FatSecret Search (The reliable free professional source)
+    const FS_CLIENT_ID = process.env.FATSECRET_CLIENT_ID;
+    const FS_CLIENT_SECRET = process.env.FATSECRET_CLIENT_SECRET;
+
+    if (FS_CLIENT_ID && FS_CLIENT_SECRET) {
+        try {
+            console.log('Attempting FatSecret Auth...');
+            const tokenRes = await fetch('https://oauth.fatsecret.com/connect/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + Buffer.from(FS_CLIENT_ID + ':' + FS_CLIENT_SECRET).toString('base64')
+                },
+                body: 'grant_type=client_credentials&scope=basic'
             });
-        });
+            
+            const tokenData = await tokenRes.json();
+            const token = tokenData.access_token;
+
+            if (token) {
+                console.log('FatSecret Auth Success!');
+                const fsRes = await fetch(`https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=${encodeURIComponent(query)}&format=json`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (fsRes.ok) {
+                    const data = await fsRes.json();
+                    console.log(`FatSecret found ${data.foods?.food?.length || 0} items`);
+                    data.foods?.food?.forEach((f: any) => {
+                        const desc = f.food_description || "";
+                        const kcal = desc.match(/Calories: (\d+)kcal/)?.[1] || 0;
+                        const protein = desc.match(/Protein: ([\d.]+)g/)?.[1] || 0;
+                        const carbs = desc.match(/Carbs: ([\d.]+)g/)?.[1] || 0;
+                        const fat = desc.match(/Fat: ([\d.]+)g/)?.[1] || 0;
+
+                        results.push({
+                            name: f.food_name,
+                            brand: f.brand_name || "Generic",
+                            kcal: parseInt(kcal),
+                            protein: parseFloat(protein),
+                            carbs: parseFloat(carbs),
+                            fat: parseFloat(fat),
+                            id: `fs-${f.food_id}`,
+                            source: 'FatSecret'
+                        });
+                    });
+                }
+            } else {
+                console.error('FatSecret Auth Failed: No token returned');
+            }
+        } catch (err) { console.error('FatSecret Critical Error:', err); }
+    } else {
+        console.warn('FatSecret Keys Missing in Environment');
     }
 
     const finalProducts = results

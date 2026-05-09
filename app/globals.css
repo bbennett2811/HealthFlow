@@ -24,10 +24,19 @@ body.theme-vulcan { --accent-color: #991b1b; --accent-glow: rgba(153, 27, 27, 0.
 body.theme-nordic { --accent-color: #1e293b; --accent-glow: rgba(30, 41, 59, 0.15); --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
 body.theme-spring { --accent-color: #10b981; --accent-glow: rgba(16, 185, 129, 0.15); --bg-gradient: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: var(--bg-gradient); min-height: 100vh; color: var(--text-main); padding: 2rem; overflow-x: hidden; transition: background 0.5s ease; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.dashboard-main { width: 100%; display: flex; flex-direction: column; align-items: center; }
+body { 
+    background: var(--bg-gradient); 
+    min-height: 100vh; 
+    color: var(--text-main); 
+    padding: 2rem; 
+    overflow-x: hidden; 
+    transition: background 0.5s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
 
 .dashboard-container { 
     width: 100%; 
