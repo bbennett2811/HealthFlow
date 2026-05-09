@@ -232,55 +232,76 @@ export default function Dashboard() {
         return <div className="insight-card" style={{height:'220px', padding:'1rem'}}><h4 style={{fontSize:'0.75rem', marginBottom:'0.5rem', color:'var(--text-muted)'}}>{label.toUpperCase()}</h4><div style={{flex:1, width:'100%'}}><Line data={data} options={options} /></div></div>;
     };
 
-    const ProgressCard = ({ label, current, goal, unit }: any) => {
-        if (label === 'Weight') {
-            const yesterday = new Date(selectedDate);
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
-            const yesterdayWeight = parseFloat(allLogs[yesterdayStr]?.weight) || 0;
-            const currentWeight = parseFloat(current) || 0;
+const ProgressCard = React.memo(({ label, current, goal, unit, selectedDate, allLogs, units }: any) => {
+    if (label === 'Weight') {
+        const yesterday = new Date(selectedDate);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayWeight = parseFloat(allLogs[yesterdayStr]?.weight) || 0;
+        const currentWeight = parseFloat(current) || 0;
 
-            let diffText = 'Starting Weight';
-            let diffColor = 'var(--text-muted)';
-            let arrow = '—';
+        let diffText = 'Starting Weight';
+        let diffColor = 'var(--text-muted)';
+        let arrow = '—';
 
-            if (yesterdayWeight > 0 && currentWeight > 0) {
-                const diff = currentWeight - yesterdayWeight;
-                diffText = diff > 0 ? `+${diff.toFixed(1)}${unit}` : `${diff.toFixed(1)}${unit}`;
-                diffColor = diff > 0 ? '#ef4444' : '#10b981';
-                arrow = diff > 0 ? '↑' : (diff < 0 ? '↓' : '—');
-                if (diff === 0) diffText = 'No Change';
-            }
-
-            const tooltipMessage = yesterdayWeight > 0 
-                ? 'Comparing to yesterday\'s weight.' 
-                : 'Comparing to your starting weight.';
-
-            return (
-                <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
-                    <h4 style={{fontSize:'0.8rem', color:'var(--text-muted)', marginBottom:'1rem'}}>
-                        WEIGHT TREND
-                        <div className="tooltip-container">
-                            <div className="info-btn">i</div>
-                            <div className="tooltip-text">{tooltipMessage}</div>
-                        </div>
-                    </h4>
-                    <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
-                        <span style={{fontSize:'1.5rem', fontWeight:800, color:diffColor}}>{arrow}</span>
-                        <div style={{fontSize:'1.8rem', fontWeight:800, color:diffColor}}>{diffText}</div>
-                    </div>
-                    <div style={{fontSize:'0.75rem', color:'var(--text-muted)', marginTop:'0.5rem'}}>Current: {currentWeight || '0'}{unit}</div>
-                </div>
-            );
+        if (yesterdayWeight > 0 && currentWeight > 0) {
+            const diff = currentWeight - yesterdayWeight;
+            diffText = diff > 0 ? `+${diff.toFixed(1)}${unit}` : `${diff.toFixed(1)}${unit}`;
+            diffColor = diff > 0 ? '#ef4444' : '#10b981';
+            arrow = diff > 0 ? '↑' : (diff < 0 ? '↓' : '—');
+            if (diff === 0) diffText = 'No Change';
         }
 
-        let percent = Math.min(Math.round((current / goal) * 100), 100);
-        let color = percent >= 100 ? '#10b981' : (percent >= 30 ? '#f59e0b' : '#ef4444');
-        const r = 35; const circ = 2 * Math.PI * r;
         return (
-            <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center'}}><h4 style={{fontSize:'0.8rem', color:'var(--text-muted)', marginBottom:'1rem'}}>{label.toUpperCase()}</h4><div style={{position:'relative', width:'80px', height:'80px'}}><svg width="80" height="80" style={{transform:'rotate(-90deg)'}}><circle cx="40" cy="40" r={r} stroke="#e2e8f0" strokeWidth="6" fill="transparent" /><circle cx="40" cy="40" r={r} stroke={color} strokeWidth="6" fill="transparent" strokeDasharray={circ} strokeDashoffset={circ - (percent / 100) * circ} strokeLinecap="round" style={{transition:'stroke-dashoffset 0.5s ease'}} /></svg><div style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%, -50%)', fontWeight:800, fontSize:'1rem', color}}>{percent}%</div></div><div style={{marginTop:'0.5rem', fontSize:'0.7rem', color:'var(--text-muted)'}}>{current}{unit} / {goal}{unit}</div></div>
+            <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
+                <h4 style={{fontSize:'0.8rem', color:'var(--text-muted)', marginBottom:'1rem'}}>
+                    WEIGHT TREND
+                    <div className="tooltip-container">
+                        <div className="info-btn">i</div>
+                        <div className="tooltip-text">{yesterdayWeight > 0 ? "Comparing to yesterday." : "Starting progress."}</div>
+                    </div>
+                </h4>
+                <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+                    <span style={{fontSize:'1.5rem', fontWeight:800, color:diffColor}}>{arrow}</span>
+                    <div style={{fontSize:'1.8rem', fontWeight:800, color:diffColor}}>{diffText}</div>
+                </div>
+                <div style={{fontSize:'0.75rem', color:'var(--text-muted)', marginTop:'0.5rem'}}>Current: {currentWeight || '0'}{unit}</div>
+            </div>
         );
-    };
+    }
+
+    const safeGoal = goal || 1;
+    const percent = Math.min(Math.round((current / safeGoal) * 100), 100) || 0;
+    const color = percent >= 100 ? '#10b981' : (percent >= 30 ? '#f59e0b' : '#ef4444');
+    const r = 35; 
+    const circ = 2 * Math.PI * r;
+    const offset = circ - (percent / 100) * circ;
+
+    return (
+        <div className="insight-card" style={{padding:'1.5rem', display:'flex', flexDirection:'column', alignItems:'center'}}>
+            <h4 style={{fontSize:'0.8rem', color:'var(--text-muted)', marginBottom:'1rem'}}>{label.toUpperCase()}</h4>
+            <div style={{position:'relative', width:'80px', height:'80px'}}>
+                <svg width="80" height="80" style={{transform:'rotate(-90deg)'}}>
+                    <circle cx="40" cy="40" r={r} stroke="#e2e8f0" strokeWidth="6" fill="transparent" />
+                    <circle 
+                        cx="40" 
+                        cy="40" 
+                        r={r} 
+                        stroke={color} 
+                        strokeWidth="6" 
+                        fill="transparent" 
+                        strokeDasharray={circ} 
+                        strokeDashoffset={offset} 
+                        strokeLinecap="round" 
+                        style={{transition:'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease'}} 
+                    />
+                </svg>
+                <div style={{position:'absolute', top:'50%', left:'50%', transform:'translate(-50%, -50%)', fontWeight:800, fontSize:'1rem', color}}>{percent}%</div>
+            </div>
+            <div style={{marginTop:'0.5rem', fontSize:'0.7rem', color:'var(--text-muted)'}}>{current}{unit} / {goal}{unit}</div>
+        </div>
+    );
+});
 
     const metrics = [
         { label: 'Water', current: dailyData.water, goal: goals.water, unit: 'L' },
@@ -446,7 +467,7 @@ export default function Dashboard() {
                     {activeTab === 'daily-progress' && (
                         <div key="progress-tab" className="tab-content">
                             {allGoalsHit && <div style={{background:'var(--accent-color)', color:'white', padding:'1rem', borderRadius:'16px', textAlign:'center', marginBottom:'2rem', fontWeight:700}}>✨ Goal reached for {displayDateName}! 🚀</div>}
-                            <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))'}}>{metrics.map(m => <ProgressCard key={m.label} {...m} />)}</div>
+                            <div className="insight-grid" style={{gridTemplateColumns:'repeat(auto-fit, minmax(150px, 1fr))'}}>{metrics.map(m => <ProgressCard key={m.label} {...m} selectedDate={selectedDate} allLogs={allLogs} units={units} />)}</div>
                         </div>
                     )}
 
