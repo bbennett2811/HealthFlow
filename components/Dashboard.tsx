@@ -278,7 +278,10 @@ export default function Dashboard() {
         { label: 'Weight', current: dailyData.weight, goal: goals.weight, unit: units === 'metric' ? 'kg' : 'lb' }
     ];
 
-    const allGoalsHit = metrics.every(m => m.label === 'Weight' ? (parseFloat(m.current as any) || 0) > 0 : m.current >= m.goal);
+    const allGoalsHit = metrics.every(m => {
+        const currentVal = typeof m.current === 'string' ? parseFloat(m.current) || 0 : m.current;
+        return m.label === 'Weight' ? currentVal > 0 : currentVal >= m.goal;
+    });
     const isToday = selectedDate === todayStr;
     const displayDateName = isToday ? 'Today' : new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
